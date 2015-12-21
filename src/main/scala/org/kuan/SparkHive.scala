@@ -48,42 +48,52 @@ object SparkHive {
     //采取新的API来读取数据
     val hadoopRDD = sc.newAPIHadoopFile(inputPath, classOf[LzoTextInputFormat], classOf[LongWritable], classOf[Text])
 
+    //日志的schema
     val schema = LineSplitter.schema(fieldLength)
+
     //将(k,v)的key去掉,只需要用v的值
-    val records = hadoopRDD.map(_._2.toString).map(LineSplitter.split(_, schema)).filter(_ != null).cache()
+    val records = hadoopRDD.map(_._2.toString).map(LineSplitter.split).cache()
 
+    //判断错误条数是多少
+    val errorNum = records.filter(x => x.length != fieldLength).count()
+    if (errorNum > 0) println(s"***********************不符合规范的记录条数为:[${errorNum}]")
 
-    val allKeys = records.map(x => {
-      val time = x(0).asInstanceOf[String]
-      time2String(time)
+    //将不规范的记录过滤后的记录
+    val filterRecords = records.filter(x => x.length == fieldLength).cache()
+
+    //查找所有的分区key
+    val allPartitionKeys = filterRecords.map(record => {
+      val time = record(0).asInstanceOf[String]
+      buildPartitionKey(time)
     }).distinct().collect()
 
-    allKeys.foreach(x => {
-      val rows = records.filter(r => {
-        val time = r(0).asInstanceOf[String]
-        time2String(time).equals(x)
-      }).map(Row.fromSeq(_))
+    //对每个分区的key分别load到hive表中
+    allPartitionKeys.foreach(partitionKey => {
+      //转换成sql的row
+      val rows = filterRecords.filter(record => {
+        val time = record(0).asInstanceOf[String]
+        buildPartitionKey(time).equals(partitionKey)
+      }).map(Row.fromSeq) //转换成sql的row
 
+      //生成df
       val df = hiveContext.createDataFrame(rows, schema)
       //创建临时表
-      val timeKey=x.replace(" ","").replace("-","")
-      val tmpTableName = s"spark_${outTable}_${timeKey}_" + new Date().getTime
+      val tmpTableName = s"spark_${outTable}_${partitionKey}_" + new Date().getTime
       df.registerTempTable(tmpTableName)
       //判断是否需要覆盖
       if (overwrite) {
-        println(s" insert overwrite table  $outTable PARTITION (dt = '${timeKey}') select * from  $tmpTableName ")
-        hiveContext.sql(s" insert overwrite table  $outTable PARTITION (dt = '${timeKey}') select * from  $tmpTableName ")
-//        hiveContext.sql(s" select * from  $tmpTableName limit 10 ")
+        println(s" insert overwrite table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
+        hiveContext.sql(s" insert overwrite table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
+        //        hiveContext.sql(s" select * from  $tmpTableName limit 10 ")
       } else {
-        println(s" insert into table  $outTable PARTITION (dt = '${timeKey}') select * from  $tmpTableName ")
-        hiveContext.sql(s" insert into table  $outTable PARTITION (dt = '${timeKey}') select * from  $tmpTableName ")
+        println(s" insert into table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
+        hiveContext.sql(s" insert into table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
       }
-
     })
   }
 
-  def time2String(timestamp: AnyRef): String = {
+  def buildPartitionKey(timestamp: AnyRef): String = {
     val ret = timestamp.asInstanceOf[String]
-    ret.split(":")(0)
+    ret.split(":")(0).replaceAll("""\s+""","").replaceAll("-", "")
   }
 }

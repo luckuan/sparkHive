@@ -22,9 +22,9 @@ object obj {
         |	"nullable":false
         |}]
       """.stripMargin
-**/
+      * */
 
-//   val schema =  LineSplitter.schema(s)
+    //   val schema =  LineSplitter.schema(s)
     /**
     val json = JSON.parseFull(s)
     val row: StructType = json match {
@@ -49,11 +49,11 @@ object obj {
       }
       case None => null
     }
-      **/
-   // print(row.find(x=>x.name.equals("name1")))
-//    print(row.fieldIndex("name3"))
+      * */
+    // print(row.find(x=>x.name.equals("name1")))
+    //    print(row.fieldIndex("name3"))
 
-    /***
+    /** *
     val ss = "ab,cd"
     val rows = Row.fromSeq(ss.split(","))
     println(rows)
@@ -62,9 +62,8 @@ object obj {
 
     print(row.toString())
 
-
-**/
-    val s=
+      * */
+    val s =
       """
         |[{
         |	"name":"name1",
@@ -153,7 +152,13 @@ object obj {
         |}]
       """.stripMargin
 
-    print(LineSplitter.schema(s))
-//    println(s)
+    println(LineSplitter.schema(21))
+    //    println(s)
+    def buildPartitionKey(timestamp: AnyRef): String = {
+      val ret = timestamp.asInstanceOf[String]
+      ret.split(":")(0).replaceAll( """\s+""", "").replaceAll("-", "")
+    }
+
+    print(buildPartitionKey("20151220 12:22:33"))
   }
 }

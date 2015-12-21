@@ -13,18 +13,13 @@ import scala.util.parsing.json.JSON
   * Created by Kuan on 15/12/20.
   */
 object LineSplitter {
-  def split(line: String, schema: StructType): IndexedSeq[Any] = {
+  def split(line: String): IndexedSeq[Any] = {
     //解析文件
     val arr = line.split( """[\]\[]""")
     val filterArray = for (i <- 0 until arr.length; if i % 2 == 1) yield {
       arr(i)
     }
-    if (filterArray.size != schema.size) {
-      null
-    } else {
-      filterArray
-    }
-
+    filterArray
 
     /**
     filterArray.zipWithIndex.map(x => {
