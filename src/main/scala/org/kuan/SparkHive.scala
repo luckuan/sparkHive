@@ -74,6 +74,7 @@ object SparkHive {
         val time = record(0).asInstanceOf[String]
         buildPartitionKey(time).equals(partitionKey)
       }).map(Row.fromSeq) //转换成sql的row
+      .repartition(1)//设置成一个分区,作为文件的输出,可能会增加处理时间,此处会进行shuffle处理
 
       //生成df
       val df = hiveContext.createDataFrame(rows, schema)
