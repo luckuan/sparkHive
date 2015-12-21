@@ -51,8 +51,8 @@ object LineSplitter {
     //    Row.fromSeq(list)
   }
 
-  def schema(schemaLength: Int): StructType = {
-    val list = for (i <- 1 to schemaLength) yield StructField("name" + i, DataTypes.StringType, true)
+  def schema(fieldLength: Int): StructType = {
+    val list = for (i <- 1 to fieldLength) yield StructField("name" + i, DataTypes.StringType, true)
     StructType(list)
 
     //    println(schemaString)

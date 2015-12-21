@@ -27,7 +27,7 @@ object SparkHive {
     val inputPath = conf.getString("inputPath")
 
     //schema,以,进行分隔
-    val schemaString = conf.getString("schemaString")
+    val fieldLength = conf.getInt("fieldLength")
 
     //hive table输出名称
     val outTable = conf.getString("outTable")
@@ -48,7 +48,7 @@ object SparkHive {
     //采取新的API来读取数据
     val hadoopRDD = sc.newAPIHadoopFile(inputPath, classOf[LzoTextInputFormat], classOf[LongWritable], classOf[Text])
 
-    val schema = LineSplitter.schema(schemaString)
+    val schema = LineSplitter.schema(fieldLength)
     //将(k,v)的key去掉,只需要用v的值
     val records = hadoopRDD.map(_._2.toString).map(LineSplitter.split(_, schema)).filter(_ != null).cache()
 
