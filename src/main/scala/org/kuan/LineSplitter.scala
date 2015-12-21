@@ -19,11 +19,9 @@ object LineSplitter {
     val filterArray = for (i <- 0 until arr.length; if i % 2 == 1) yield {
       arr(i)
     }
-
     if (filterArray.size != schema.size) {
-      // print(s"schema的个数和数据的个数不一致")
-      return null
-    }else{
+      null
+    } else {
       filterArray
     }
 
@@ -53,31 +51,37 @@ object LineSplitter {
     //    Row.fromSeq(list)
   }
 
-  def schema(schemaString: String): StructType = {
+  def schema(schemaLength: Int): StructType = {
+    val list = for (i <- 1 to schemaLength) yield StructField("name" + i, DataTypes.StringType, true)
+    StructType(list)
+
     //    println(schemaString)
-    val json = JSON.parseFull(schemaString)
+    //    val json = JSON.parseFull(schemaString)
     //    println(json)
+    /**
     json match {
-      case Some(list: List[Map[String, Any]]) => {
-        StructType(list.map(x => {
-          val name = x.get("name").get.asInstanceOf[String]
-          val dataTypeStr = x.get("dataType").get.asInstanceOf[String]
-          val nullable = x.get("nullable").get.asInstanceOf[Boolean]
-          val dataType = dataTypeStr match {
-            case "string" => DataTypes.StringType
-            case "boolean" => DataTypes.BooleanType
-            case "date" => DataTypes.DateType
-            case "timestamp" => DataTypes.TimestampType
-            case "long" => DataTypes.LongType
-            case "int" => DataTypes.IntegerType
-            case "float" => DataTypes.FloatType
-            case "double" => DataTypes.DoubleType
-            case other => throw new RuntimeException(s"未知的数据类型${other}")
-          }
-          StructField(name, DataTypes.StringType, nullable)
-        }))
+        case Some(list: List[Map[String, Any]]) => {
+          StructType(list.map(x => {
+            val name = x.get("name").get.asInstanceOf[String]
+            val dataTypeStr = x.get("dataType").get.asInstanceOf[String]
+            val nullable = x.get("nullable").get.asInstanceOf[Boolean]
+            val dataType = dataTypeStr match {
+              case "string" => DataTypes.StringType
+              case "boolean" => DataTypes.BooleanType
+              case "date" => DataTypes.DateType
+              case "timestamp" => DataTypes.TimestampType
+              case "long" => DataTypes.LongType
+              case "int" => DataTypes.IntegerType
+              case "float" => DataTypes.FloatType
+              case "double" => DataTypes.DoubleType
+              case other => throw new RuntimeException(s"未知的数据类型${other}")
+            }
+            StructField(name, DataTypes.StringType, nullable)
+          }))
+        }
+        case None => throw new RuntimeException(s"未能正确解析[${schemaString}]")
       }
-      case None => throw new RuntimeException(s"未能正确解析[${schemaString}]")
-    }
+      * */
   }
+
 }
