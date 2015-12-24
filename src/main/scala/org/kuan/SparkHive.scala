@@ -85,7 +85,6 @@ object SparkHive {
       if (overwrite) {
         println(s" insert overwrite table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
         hiveContext.sql(s" insert overwrite table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
-        //        hiveContext.sql(s" select * from  $tmpTableName limit 10 ")
       } else {
         println(s" insert into table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
         hiveContext.sql(s" insert into table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
