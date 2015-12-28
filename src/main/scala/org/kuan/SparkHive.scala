@@ -8,8 +8,8 @@ import com.typesafe.config.ConfigFactory
 import org.apache.hadoop.io.{Text, LongWritable}
 import org.apache.spark.{SparkConf, SparkContext}
 
-
-import org.apache.spark.sql.Row
+// Import Row.
+import org.apache.spark.sql.Row;
 
 
 /**
@@ -56,7 +56,7 @@ object SparkHive {
 
     //判断错误条数是多少
     val errorNum = records.filter(x => x.length != fieldLength).count()
-    if (errorNum > 0) println(s"""***********************不符合规范的记录条数为:[$errorNum]""")
+    if (errorNum > 0) println(s"***********************不符合规范的记录条数为:[${errorNum}]")
 
     //将不规范的记录过滤后的记录
     val filterRecords = records.filter(x => x.length == fieldLength).cache()
@@ -83,12 +83,12 @@ object SparkHive {
       df.registerTempTable(tmpTableName)
       //判断是否需要覆盖
       if (overwrite) {
-        println(s""" insert overwrite table  $outTable PARTITION (dt = '$partitionKey') select * from  $tmpTableName """)
-        hiveContext.sql(s""" insert overwrite table  $outTable PARTITION (dt = '$partitionKey') select * from  $tmpTableName """)
+        println(s" insert overwrite table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
+        hiveContext.sql(s" insert overwrite table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
         //        hiveContext.sql(s" select * from  $tmpTableName limit 10 ")
       } else {
-        println(s""" insert into table  $outTable PARTITION (dt = '$partitionKey') select * from  $tmpTableName """)
-        hiveContext.sql(s""" insert into table  $outTable PARTITION (dt = '$partitionKey') select * from  $tmpTableName """)
+        println(s" insert into table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
+        hiveContext.sql(s" insert into table  $outTable PARTITION (dt = '${partitionKey}') select * from  $tmpTableName ")
       }
     })
   }
